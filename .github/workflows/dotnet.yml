@@ -11,6 +11,10 @@ on:
     - '**.cs'
     - '**.csproj'
 
+defaults:
+  run:
+    working-directory: ./MineSweeper
+
 jobs:
   build:
 
