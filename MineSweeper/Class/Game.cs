@@ -9,6 +9,13 @@ namespace MineSweeper.Class
         void Start();
 
         /// <summary>
+        /// Flag the cell as a mine
+        /// </summary>
+        /// <param name="x"> Coordinate starting at 0 </param>
+        /// <param name="y"> Coordinate starting at 0 </param>
+        void FlagMine(int x, int y);
+
+        /// <summary>
         /// Reveal the cell and its adjacent cells recursively if there are no adjacent mines
         /// </summary>
         /// <param name="x"> Coordinate starting at 0 </param>
@@ -19,7 +26,8 @@ namespace MineSweeper.Class
         /// Play the game
         /// </summary>
         /// <param name="input"> Input coordinate, e.g A1 </param>
-        void Play(string input);
+        /// <param name="option"> 1 to flag mine, 2 to reveal cell</param>
+        void Play(string input, int option);
 
         /// <summary>
         /// Set number og moves remaining
@@ -62,9 +70,18 @@ namespace MineSweeper.Class
 
             while (MovesRemaining > 0 && !IsGameOver)
             {
-                Console.Write("Select a square to reveal (e.g. A1): ");
-                string input = Console.ReadLine().ToUpper();
-                Play(input);
+                Console.Write("Type '1' to flag a mine or Type '2' to reveal a cell: ");
+                if (int.TryParse(Console.ReadLine(), out int option) && (option == 1 || option == 2))
+                {
+                    Console.Write("Select a square to reveal (e.g. A1): ");
+                    string input = Console.ReadLine().ToUpper();
+                    Play(input, option);
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input! Please try again.");
+                    Console.WriteLine();
+                }
             }
 
             Console.WriteLine("Press any key to play again...");
@@ -76,11 +93,12 @@ namespace MineSweeper.Class
         /// </summary>
         private void SetupGrid()
         {
-            while (_grid.Size <= 0)
+            int gridSize = 0;
+            while (gridSize <= 0)
             {
                 Console.WriteLine();
                 Console.WriteLine("Enter the size of the grid up to a max of 26 (e.g. 4 for a 4x4 grid): ");
-                if (int.TryParse(Console.ReadLine(), out int gridSize) && gridSize > 1 && gridSize <= 26)
+                if (int.TryParse(Console.ReadLine(), out gridSize) && gridSize > 1 && gridSize <= 26)
                 {
                     _grid.Initialize(gridSize);
                     return;
@@ -102,7 +120,7 @@ namespace MineSweeper.Class
                 Console.WriteLine($"Enter the number of mines to place on the grid (Maximum {totalMineAllowed}): ");
                 if (int.TryParse(Console.ReadLine(), out int mineCount) && mineCount > 0 && mineCount <= totalMineAllowed)
                 {
-                    SetMovesRemaining(_grid.Size * _grid.Size - mineCount);
+                    SetMovesRemaining(_grid.Size * _grid.Size);
                     _mineGenerator.PlaceMines(_grid, mineCount);
                     return;
                 }
@@ -113,22 +131,35 @@ namespace MineSweeper.Class
             }
         }
 
-        public void Play(string input)
+        public void Play(string input, int option)
         {
             if (_grid.IsValidInput(input, out int x, out int y))
             {
                 Cell cell = _grid.GetCell(x, y);
 
-                if (cell.IsMine)
-                {
-                    Console.WriteLine("Oh no, you detonated a mine! Game over.");
-                    GameOver();
-                    return;
-                }
-
                 if (!cell.IsRevealed)
                 {
-                    RevealCell(x, y);
+                    if (option == 1) // Flag mine option
+                    {
+                        if (!cell.IsMine)
+                        {
+                            Console.WriteLine("Oh no, this cell is not a mine! Game over.");
+                            GameOver();
+                            return;
+                        }
+                        FlagMine(x, y);
+                    }
+                    else // Reveal cell option
+                    {
+                        if (cell.IsMine)
+                        {
+                            Console.WriteLine("Oh no, you detonated a mine! Game over.");
+                            GameOver();
+                            return;
+                        }
+                        RevealCell(x, y);
+                    }
+
                     _grid.Display();
 
                     if (MovesRemaining == 0)
@@ -150,6 +181,14 @@ namespace MineSweeper.Class
                 Console.WriteLine("Invalid input! Please try again.");
                 Console.WriteLine();
             }
+        }
+
+        public void FlagMine(int x, int y)
+        {
+            Cell cell = _grid.GetCell(x, y);
+            cell.SetAdjacentMines("X");
+            cell.Reveal();
+            SetMovesRemaining(MovesRemaining - 1);
         }
 
         public void RevealCell(int x, int y)
