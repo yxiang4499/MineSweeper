@@ -79,11 +79,8 @@ namespace MineSweeper.Class
             if (!string.IsNullOrWhiteSpace(input))
             {
                 y = input[0] - 'A'; // Convert letter to index
-                if (y >= 0 && y < Size && int.TryParse(input.Substring(1), out x))
-                {
-                    x--; // Adjust for 0-based index
+                if (int.TryParse(input.Substring(1), out x) && IsCellInGrid(--x,y))
                     return true;
-                }
             }
             return false;
         }

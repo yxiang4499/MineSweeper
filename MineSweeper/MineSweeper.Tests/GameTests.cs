@@ -29,11 +29,11 @@ public class GameTests
     {
         // Arrange
         var grid = new Grid();
-        grid.Initialize(5);
+        grid.Initialize(2);
         var mineGenerator = new MineGenerator();
-        mineGenerator.PlaceMines(grid, 3);
+        mineGenerator.PlaceMines(grid, 1);
         var game = new Game(grid, mineGenerator);
-        game.SetMovesRemaining(22);
+        game.SetMovesRemaining(3);
 
         // Act
         int yPosition = Convert.ToInt32(grid.GetCell(0, 0).IsMine); // If cell 0,0 contains mine then yPosition set to 1, true = 1, False = 0.
@@ -71,6 +71,50 @@ public class GameTests
     }
 
     [Fact]
+    public void FlagMine_ShouldRevealCellAndDecreaseMovesRemaining()
+    {
+        // Arrange
+        var grid = new Grid();
+        grid.Initialize(2); // 2x2 grid
+        var mineGenerator = new MineGenerator();
+        mineGenerator.PlaceMines(grid, 1); // Place 1 Mine
+        var game = new Game(grid, mineGenerator);
+        game.SetMovesRemaining(3);
+
+        // Act
+        int yPosition = Convert.ToInt32(grid.GetCell(0, 0).IsMine); // If cell 0,0 contains mine then yPosition set to 1, true = 1, False = 0.
+        var cell = grid.GetCell(0, yPosition); // Get Cell that does not contain Mine.
+        game.FlagMine(0, yPosition);
+
+        // Assert
+        Assert.True(cell.IsRevealed);
+        Assert.Equal(grid.Size * grid.Size - 2, game.MovesRemaining); // Total cells - mines - revealed cell
+    }
+
+    [Fact]
+    public void FlagMine_ShouldNotDecreaseMovesRemainingOnAlreadyRevealedCell()
+    {
+        // Arrange
+        var grid = new Grid();
+        grid.Initialize(2);
+        var mineGenerator = new MineGenerator();
+        mineGenerator.PlaceMines(grid, 1);
+        var game = new Game(grid, mineGenerator);
+        game.SetMovesRemaining(3);
+
+        // Act
+        int yPosition = Convert.ToInt32(grid.GetCell(0, 0).IsMine); // If cell 0,0 contains mine then yPosition set to 1, true = 1, False = 0.
+        var cell = grid.GetCell(0, yPosition); // Get Cell that does not contain Mine.
+        game.RevealCell(0, yPosition);
+
+        var movesRemainingBefore = game.MovesRemaining;
+        game.FlagMine(0, yPosition); // Try to access the same cell again
+
+        // Assert
+        Assert.Equal(movesRemainingBefore, game.MovesRemaining); // Moves remaining should not decrease
+    }
+
+    [Fact]
     public void Play_ShouldTriggerGameOverOnMine()
     {
         // Arrange
@@ -94,7 +138,7 @@ public class GameTests
         var grid = new Grid();
         grid.Initialize(3);
         var mineGenerator = new MineGenerator();
-        mineGenerator.PlaceMines(grid, 0); // Place mines on all cells
+        mineGenerator.PlaceMines(grid, 0); // No mines
         var game = new Game(grid, mineGenerator);
         game.SetMovesRemaining(9);
 
@@ -103,6 +147,42 @@ public class GameTests
 
         // Assert
         Assert.Equal(0, game.MovesRemaining);
+        Assert.True(game.IsGameOver);
+
+    }
+
+    [Fact]
+    public void Flag_ShouldNotTriggerGameOverOnMine()
+    {
+        // Arrange
+        var grid = new Grid();
+        grid.Initialize(3);
+        var mineGenerator = new MineGenerator();
+        mineGenerator.PlaceMines(grid, 9); // Place mines on all cells
+        var game = new Game(grid, mineGenerator);
+
+        // Act
+        game.Flag("A1");
+
+        // Assert
+        Assert.False(game.IsGameOver);
+    }
+
+    [Fact]
+    public void Flag_ShouldTriggerGameOverOnFalseFlagging()
+    {
+        // Arrange
+        var grid = new Grid();
+        grid.Initialize(3);
+        var mineGenerator = new MineGenerator();
+        mineGenerator.PlaceMines(grid, 0); // No mines
+        var game = new Game(grid, mineGenerator);
+        game.SetMovesRemaining(9);
+
+        // Act
+        game.Flag("A1");
+
+        // Assert
         Assert.True(game.IsGameOver);
 
     }
