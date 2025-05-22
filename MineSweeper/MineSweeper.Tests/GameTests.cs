@@ -29,11 +29,11 @@ public class GameTests
     {
         // Arrange
         var grid = new Grid();
-        grid.Initialize(5);
+        grid.Initialize(2);
         var mineGenerator = new MineGenerator();
-        mineGenerator.PlaceMines(grid, 3);
+        mineGenerator.PlaceMines(grid, 1);
         var game = new Game(grid, mineGenerator);
-        game.SetMovesRemaining(22);
+        game.SetMovesRemaining(3);
 
         // Act
         int yPosition = Convert.ToInt32(grid.GetCell(0, 0).IsMine); // If cell 0,0 contains mine then yPosition set to 1, true = 1, False = 0.

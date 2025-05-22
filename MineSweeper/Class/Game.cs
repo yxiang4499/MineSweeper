@@ -77,14 +77,14 @@ namespace MineSweeper.Class
         private void SetupGrid()
         {
             int gridSize = 0;
-            while (gridSize <= 0)
+            while (true)
             {
                 Console.WriteLine();
                 Console.WriteLine("Enter the size of the grid up to a max of 26 (e.g. 4 for a 4x4 grid): ");
                 if (int.TryParse(Console.ReadLine(), out gridSize) && gridSize > 1 && gridSize <= 26)
                 {
                     _grid.Initialize(gridSize);
-                    return;
+                    break;
                 }
                 else
                     Console.WriteLine("Invalid input! Enter a number greater than 1 and less than or equal to 26");
@@ -105,7 +105,7 @@ namespace MineSweeper.Class
                 {
                     SetMovesRemaining(_grid.Size * _grid.Size - mineCount);
                     _mineGenerator.PlaceMines(_grid, mineCount);
-                    return;
+                    break;
                 }
                 else
                 {
